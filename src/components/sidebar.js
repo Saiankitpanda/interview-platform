@@ -31,6 +31,10 @@ export function renderSidebar(container, activePage = 'home') {
           <span class="nav-icon">🏛️</span>
           <span>HLD Practice</span>
         </button>
+        <button class="sidebar-nav-item ${activePage === 'practice-lab' ? 'active' : ''}" data-page="practice-lab">
+          <span class="nav-icon">🧪</span>
+          <span>Practice Lab</span>
+        </button>
 
         <div class="sidebar-section-label">Resources</div>
         <button class="sidebar-nav-item ${activePage === 'resources' ? 'active' : ''}" data-page="resources">
