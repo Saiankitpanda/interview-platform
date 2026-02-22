@@ -13,7 +13,8 @@ export const LLD_BOOKS = [
         description: 'A brain-friendly guide to design patterns using Java. Perfect starting point for OOP & pattern recognition.',
         topics: ['Factory', 'Observer', 'Decorator', 'Strategy', 'Singleton'],
         rating: 4.8,
-        link: 'https://www.oreilly.com/library/view/head-first-design/9781492077992/'
+        pdfLink: 'https://ia801309.us.archive.org/5/items/head-first-design-patterns-by-eric-freeman-elisabeth-robson/Head%20First%20Design%20Patterns%20by%20Eric%20Freeman%2C%20Elisabeth%20Robson.pdf',
+        pages: 694
     },
     {
         id: 'design-patterns-gof',
@@ -25,7 +26,8 @@ export const LLD_BOOKS = [
         description: 'The classic "Gang of Four" book. Definitive catalogue of 23 design patterns every engineer must know.',
         topics: ['Creational', 'Structural', 'Behavioral', 'Abstract Factory', 'Composite'],
         rating: 4.7,
-        link: 'https://www.amazon.com/Design-Patterns-Elements-Reusable-Object-Oriented/dp/0201633612'
+        pdfLink: 'https://github.com/TushaarGVS/Design-Patterns-Mentorship/blob/master/Erta%20Gamma%2C%20Richard%20Helm%2C%20Ralph%20Johnson%2C%20John%20Vlissides-Design%20Patterns_%20Elements%20of%20Reusable%20Object-Oriented%20Software%20%20-Addison-Wesley%20Professional%20(1994).pdf',
+        pages: 395
     },
     {
         id: 'clean-code',
@@ -37,7 +39,8 @@ export const LLD_BOOKS = [
         description: 'Principles for writing readable, maintainable code. Essential for writing quality LLD solutions.',
         topics: ['Naming', 'Functions', 'Error Handling', 'Testing', 'Refactoring'],
         rating: 4.6,
-        link: 'https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882'
+        pdfLink: 'https://github.com/jnguyen095/clean-code/blob/master/Clean.Code.A.Handbook.of.Agile.Software.Craftsmanship.pdf',
+        pages: 464
     },
     {
         id: 'clean-architecture',
@@ -49,7 +52,8 @@ export const LLD_BOOKS = [
         description: 'Learn how to structure software so it is easy to build, maintain, and extend. SOLID principles in depth.',
         topics: ['SOLID', 'Components', 'Architecture', 'Boundaries', 'Layers'],
         rating: 4.5,
-        link: 'https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164'
+        pdfLink: 'https://github.com/GunterMueller/Books-3/blob/master/Clean%20Architecture%20A%20Craftsman%20Guide%20to%20Software%20Structure%20and%20Design.pdf',
+        pages: 432
     },
     {
         id: 'oop-thought-process',
@@ -61,7 +65,8 @@ export const LLD_BOOKS = [
         description: 'Foundational OOP mindset — thinking in objects. Great for building the mental model for LLD.',
         topics: ['Encapsulation', 'Inheritance', 'Polymorphism', 'Composition', 'Abstraction'],
         rating: 4.3,
-        link: 'https://www.amazon.com/Object-Oriented-Thought-Process-Developers-Library/dp/0135181968'
+        pdfLink: 'https://archive.org/details/objectorientedth0000weis',
+        pages: 336
     },
     {
         id: 'refactoring',
@@ -73,7 +78,8 @@ export const LLD_BOOKS = [
         description: 'Master the art of refactoring — restructuring code without changing behavior. Key for LLD interviews.',
         topics: ['Code Smells', 'Extract Method', 'Move Method', 'Replace Conditional', 'Composing Methods'],
         rating: 4.7,
-        link: 'https://www.amazon.com/Refactoring-Improving-Existing-Addison-Wesley-Signature/dp/0134757599'
+        pdfLink: 'https://github.com/gg-daddy/ebooks/blob/master/erta%20Fowler%20-%20Refactoring%20-%20Improving%20the%20Design%20of%20Existing%20Code.pdf',
+        pages: 448
     },
     {
         id: 'design-patterns-java',
@@ -85,7 +91,8 @@ export const LLD_BOOKS = [
         description: 'Practical Java implementations of design patterns with real-world examples and exercises.',
         topics: ['Iterator', 'Adapter', 'Facade', 'Template Method', 'Chain of Responsibility'],
         rating: 4.2,
-        link: 'https://www.amazon.com/Design-Patterns-Java-Steven-Metsker/dp/0321333020'
+        pdfLink: 'https://github.com/ajitpal/BookBank/blob/master/%5BDesign%20Patterns%20in%20Java(2nd)%5D.Steven.John.Metsker.pdf',
+        pages: 480
     },
     {
         id: 'design-patterns-python',
@@ -97,7 +104,8 @@ export const LLD_BOOKS = [
         description: 'Pythonic implementations of classic and modern design patterns for Python developers.',
         topics: ['Builder', 'Prototype', 'Proxy', 'MVC', 'Microservices Patterns'],
         rating: 4.1,
-        link: 'https://www.amazon.com/Mastering-Python-Design-Patterns-efficient/dp/1788837487'
+        pdfLink: 'https://github.com/gg-daddy/ebooks/blob/master/Mastering%20Python%20Design%20Patterns.pdf',
+        pages: 238
     }
 ];
 

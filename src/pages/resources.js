@@ -78,9 +78,12 @@ export function renderResourcesPage(container) {
               <div class="book-topics">
                 ${book.topics.map(t => `<span class="mini-tag">${t}</span>`).join('')}
               </div>
-              <a href="${book.link}" target="_blank" rel="noopener" class="book-link btn btn-secondary btn-sm">
-                View Book →
-              </a>
+              <div class="book-footer">
+                <span class="book-pages">📄 ${book.pages} pages</span>
+                <a href="${book.pdfLink}" target="_blank" rel="noopener" class="book-link btn btn-pdf btn-sm">
+                  📄 Read Free PDF
+                </a>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -397,7 +400,21 @@ function addResourceStyles(container) {
       background: rgba(255,255,255,0.06); border-radius: var(--radius-full);
       color: var(--text-muted); letter-spacing: 0.02em;
     }
-    .book-link { width: 100%; justify-content: center; text-decoration: none; }
+    .book-footer {
+      display: flex; justify-content: space-between; align-items: center; margin-top: auto;
+    }
+    .book-pages { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+    .book-link { text-decoration: none; }
+    .btn-pdf {
+      background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(6,182,212,0.15));
+      border: 1px solid rgba(16,185,129,0.3); color: var(--accent-emerald);
+      font-weight: 600; transition: all var(--transition-fast);
+    }
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, rgba(16,185,129,0.35), rgba(6,182,212,0.25));
+      border-color: var(--accent-emerald); transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16,185,129,0.2);
+    }
 
     /* ── Repo Cards ───────────────────────────────────────── */
     .repo-grid {
