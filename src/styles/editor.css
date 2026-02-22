@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════
+   Code Editor Panel
+   ═══════════════════════════════════════════════════════════ */
+
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.editor-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.editor-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.lang-selector {
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    outline: none;
+    cursor: pointer;
+}
+
+.lang-selector option {
+    background: var(--bg-secondary);
+}
+
+.run-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--accent-emerald), #34d399);
+    border: none;
+    color: white;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.run-btn:hover {
+    box-shadow: var(--shadow-glow-emerald);
+    transform: translateY(-1px);
+}
+
+.run-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.run-btn.running {
+    animation: pulse 1s infinite;
+}
+
+.submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--accent-indigo), #818cf8);
+    border: none;
+    color: white;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.submit-btn:hover {
+    box-shadow: var(--shadow-glow-indigo);
+    transform: translateY(-1px);
+}
+
+/* ── Editor area ──────────────────────────────────────────── */
+.editor-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.editor-area .cm-editor {
+    height: 100%;
+    font-size: 13px;
+}
+
+.editor-area .cm-editor .cm-scroller {
+    font-family: var(--font-mono);
+    line-height: 1.6;
+}
+
+.editor-area .cm-editor.cm-focused {
+    outline: none;
+}
+
+/* ── Output Console ───────────────────────────────────────── */
+.output-panel {
+    border-top: 1px solid var(--glass-border);
+    background: var(--bg-secondary);
+    max-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.output-header-title {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.output-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-3) var(--space-4);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: var(--text-secondary);
+}
+
+.output-body.error {
+    color: var(--accent-rose);
+}
+
+.output-body.success {
+    color: var(--accent-emerald);
+}
+
+.output-stats {
+    display: flex;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-4);
+    border-top: 1px solid var(--glass-border);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.output-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* ── Test results ─────────────────────────────────────────── */
+.test-results {
+    padding: var(--space-3) var(--space-4);
+}
+
+.test-result-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: var(--text-xs);
+}
+
+.test-result-item:last-child {
+    border-bottom: none;
+}
+
+.test-status {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.test-status.pass {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+}
+
+.test-status.fail {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--accent-rose);
+}
+
+.test-name {
+    flex: 1;
+    color: var(--text-secondary);
+}
+
+.test-time {
+    color: var(--text-muted);
+}
+
+/* ── Empty state placeholders ─────────────────────────────── */
+.editor-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.editor-placeholder-icon {
+    font-size: 48px;
+    margin-bottom: var(--space-4);
+    opacity: 0.3;
+}
+
+.editor-placeholder-text {
+    font-size: var(--text-sm);
+    max-width: 300px;
+    line-height: 1.6;
+}
