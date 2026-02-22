@@ -5,7 +5,7 @@
 import { router } from '../router.js';
 
 export function renderSidebar(container, activePage = 'home') {
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="sidebar">
       <div class="sidebar-brand">
         <div class="sidebar-brand-icon">IO</div>
@@ -21,6 +21,12 @@ export function renderSidebar(container, activePage = 'home') {
         <button class="sidebar-nav-item ${activePage === 'questions' ? 'active' : ''}" data-page="questions">
           <span class="nav-icon">📚</span>
           <span>Question Bank</span>
+        </button>
+
+        <div class="sidebar-section-label">Resources</div>
+        <button class="sidebar-nav-item ${activePage === 'resources' ? 'active' : ''}" data-page="resources">
+          <span class="nav-icon">📚</span>
+          <span>LLD Resources</span>
         </button>
 
         <div class="sidebar-section-label">Quick Start</div>
@@ -51,17 +57,17 @@ export function renderSidebar(container, activePage = 'home') {
     </div>
   `;
 
-    // Event listeners
-    container.querySelectorAll('[data-page]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const page = btn.dataset.page;
-            router.navigate(page === 'home' ? '/' : '/' + page);
-        });
+  // Event listeners
+  container.querySelectorAll('[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      router.navigate(page === 'home' ? '/' : '/' + page);
     });
+  });
 
-    container.querySelectorAll('[data-quick]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            router.navigate(`/interview?round=${btn.dataset.quick}&mode=coaching&difficulty=medium`);
-        });
+  container.querySelectorAll('[data-quick]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      router.navigate(`/interview?round=${btn.dataset.quick}&mode=coaching&difficulty=medium`);
     });
+  });
 }
