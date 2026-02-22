@@ -15,6 +15,7 @@ import { renderInterviewPage } from './pages/interview.js';
 import { renderQuestionsPage } from './pages/questions.js';
 import { renderReportPage } from './pages/report.js';
 import { renderResourcesPage } from './pages/resources.js';
+import { renderHLDPracticePage } from './pages/hldPractice.js';
 
 const app = document.getElementById('app');
 
@@ -47,6 +48,7 @@ router
   .on('/', withSidebar(renderHomePage, 'home'))
   .on('/questions', withSidebar(renderQuestionsPage, 'questions'))
   .on('/resources', withSidebar(renderResourcesPage, 'resources'))
+  .on('/hld-practice', withSidebar(renderHLDPracticePage, 'hld-practice'))
   .on('/interview', fullScreen(renderInterviewPage))
   .on('/report', withSidebar(renderReportPage, 'report'))
   .on('*', withSidebar(renderHomePage, 'home'));

@@ -30,7 +30,13 @@ export const questions = {
                 { input: [1, 2, 3, 4, 5], target: 15, expected: 5 },
                 { input: [5, 1, 3, 5, 10, 7, 4, 9, 2, 8], target: 15, expected: 2 },
                 { input: Array.from({ length: 1000 }, () => 1), target: 500, expected: 500 }
-            ]
+            ],
+            solution: {
+                approach: 'Use the **Sliding Window** technique. Maintain a window with a running sum. Expand right, then shrink from left when sum >= target. Track the minimum window length.',
+                code: `function minSubArrayLen(target, nums) {\n  let left = 0, sum = 0, minLen = Infinity;\n  for (let right = 0; right < nums.length; right++) {\n    sum += nums[right];\n    while (sum >= target) {\n      minLen = Math.min(minLen, right - left + 1);\n      sum -= nums[left++];\n    }\n  }\n  return minLen === Infinity ? 0 : minLen;\n}`,
+                timeComplexity: 'O(n) — each element is visited at most twice',
+                spaceComplexity: 'O(1) — only a few variables'
+            }
         },
         {
             id: 'dsa-2',
@@ -50,7 +56,13 @@ export const questions = {
             expectedOutline: 'DFS returning height or -1 (unbalanced signal). Check |left - right| <= 1 at each node.',
             pitfalls: ['Computing height separately (O(n^2))', 'Not handling null/empty tree', 'Returning wrong sentinel values'],
             rubricHints: { optimal: 'O(n) single-pass DFS', suboptimal: 'O(n^2) computing height at each node' },
-            hiddenTests: []
+            hiddenTests: [],
+            solution: {
+                approach: 'Use **DFS** returning height or -1 (unbalanced signal). At each node, check if |leftHeight - rightHeight| <= 1. Propagate -1 up if unbalanced.',
+                code: `function isBalanced(root) {\n  function dfs(node) {\n    if (!node) return 0;\n    const left = dfs(node.left);\n    const right = dfs(node.right);\n    if (left === -1 || right === -1) return -1;\n    if (Math.abs(left - right) > 1) return -1;\n    return Math.max(left, right) + 1;\n  }\n  return dfs(root) !== -1;\n}`,
+                timeComplexity: 'O(n) — visit each node once',
+                spaceComplexity: 'O(h) — recursion stack depth'
+            }
         },
         {
             id: 'dsa-3',
@@ -72,7 +84,13 @@ export const questions = {
             expectedOutline: 'Topological sort via BFS (Kahn\'s) or DFS cycle detection. Build adjacency list, track in-degrees.',
             pitfalls: ['Not detecting all cycles', 'Off-by-one in course numbering', 'Ignoring disconnected components'],
             rubricHints: { optimal: 'O(V+E) topological sort', suboptimal: 'O(V*E) brute-force DFS from each node' },
-            hiddenTests: []
+            hiddenTests: [],
+            solution: {
+                approach: "Use **Kahn's Algorithm** (BFS topological sort). Build adjacency list + in-degree array. Start with nodes having 0 in-degree. Process them, reducing neighbors' in-degree. If all nodes processed, no cycle.",
+                code: `function canFinish(numCourses, prerequisites) {\n  const adj = Array.from({length: numCourses}, () => []);\n  const inDeg = new Array(numCourses).fill(0);\n  for (const [a, b] of prerequisites) {\n    adj[b].push(a);\n    inDeg[a]++;\n  }\n  const queue = [];\n  for (let i = 0; i < numCourses; i++) {\n    if (inDeg[i] === 0) queue.push(i);\n  }\n  let count = 0;\n  while (queue.length) {\n    const node = queue.shift();\n    count++;\n    for (const next of adj[node]) {\n      if (--inDeg[next] === 0) queue.push(next);\n    }\n  }\n  return count === numCourses;\n}`,
+                timeComplexity: 'O(V + E) — process each vertex and edge once',
+                spaceComplexity: 'O(V + E) — adjacency list + in-degree array'
+            }
         },
         {
             id: 'dsa-4',
@@ -154,7 +172,13 @@ export const questions = {
             ],
             expectedEntities: ['ParkingLot', 'Level', 'ParkingSpot', 'Vehicle', 'Ticket', 'ParkingStrategy'],
             patterns: ['Strategy (parking allocation)', 'Factory (vehicle creation)', 'Observer (spot availability notifications)'],
-            followUps: ['How would you add payment?', 'How would you handle EV charging spots?', 'How would you handle peak hour pricing?']
+            followUps: ['How would you add payment?', 'How would you handle EV charging spots?', 'How would you handle peak hour pricing?'],
+            solution: {
+                approach: 'Use **Strategy pattern** for parking allocation, **Factory** for vehicle creation, and **Observer** for notifications. ParkingLot contains Levels, each has ParkingSpots. Spots have types (small/medium/large). Vehicles get matched to compatible spots.',
+                code: `// Key classes:\nclass ParkingLot { levels: Level[]; park(vehicle): Ticket; unpark(ticket): void; }\nclass Level { spots: ParkingSpot[]; findAvailable(type): ParkingSpot; }\nclass ParkingSpot { type: SpotType; vehicle: Vehicle | null; isAvailable(): boolean; }\nclass Vehicle { type: VehicleType; licensePlate: string; }\nclass Ticket { spot: ParkingSpot; vehicle: Vehicle; entryTime: Date; }\ninterface ParkingStrategy { findSpot(levels, vehicle): ParkingSpot; }`,
+                timeComplexity: 'park(): O(L * S) where L=levels, S=spots per level',
+                spaceComplexity: 'O(L * S) for spot tracking'
+            }
         },
         {
             id: 'lld-2',
@@ -171,7 +195,13 @@ export const questions = {
             ],
             expectedEntities: ['RateLimiter', 'RateLimitAlgorithm', 'TokenBucket', 'SlidingWindowCounter', 'FixedWindowCounter', 'RateLimitConfig'],
             patterns: ['Strategy (algorithm selection)', 'Decorator (composing limiters)', 'Singleton (shared state)'],
-            followUps: ['How would you handle distributed rate limiting?', 'What happens during clock drift?', 'How do you handle burst traffic?']
+            followUps: ['How would you handle distributed rate limiting?', 'What happens during clock drift?', 'How do you handle burst traffic?'],
+            solution: {
+                approach: 'Use **Strategy pattern** to swap algorithms. TokenBucket allows bursts, SlidingWindow is more accurate. Use ConcurrentHashMap for thread safety. Decorator pattern to compose rate limiters (per-user + global).',
+                code: `interface RateLimiter { boolean allowRequest(String clientId); }\nclass TokenBucket implements RateLimiter {\n  int capacity; int tokens; long lastRefill;\n  boolean allowRequest(String clientId) {\n    refill();\n    if (tokens > 0) { tokens--; return true; }\n    return false;\n  }\n}\nclass SlidingWindowCounter implements RateLimiter { /* ... */ }\nclass RateLimiterFactory { RateLimiter create(Config config); }`,
+                timeComplexity: 'O(1) for each request check',
+                spaceComplexity: 'O(N) where N = number of clients'
+            }
         },
         {
             id: 'lld-3',

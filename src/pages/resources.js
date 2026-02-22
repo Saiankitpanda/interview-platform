@@ -5,10 +5,10 @@
 import { LLD_BOOKS, LLD_GITHUB_REPOS, LLD_TOPICS } from '../data/resources.js';
 
 export function renderResourcesPage(container) {
-    let activeTab = 'books';
+  let activeTab = 'books';
 
-    function render() {
-        container.innerHTML = `
+  function render() {
+    container.innerHTML = `
         <div class="page-container resources-page">
           <!-- Hero Section -->
           <div class="res-hero animate-fade-in-up">
@@ -42,21 +42,24 @@ export function renderResourcesPage(container) {
             <button class="res-tab ${activeTab === 'repos' ? 'active' : ''}" data-tab="repos">
               <span>🐙</span> GitHub Repos <span class="tab-count">${LLD_GITHUB_REPOS.length}</span>
             </button>
+            <button class="res-tab ${activeTab === 'uml' ? 'active' : ''}" data-tab="uml">
+              <span>📐</span> UML Diagrams <span class="tab-count">${getUMLDiagrams().length}</span>
+            </button>
           </div>
 
           <!-- Content Area -->
           <div class="res-content" id="res-content">
-            ${activeTab === 'books' ? renderBooksGrid() : renderReposGrid()}
+            ${activeTab === 'books' ? renderBooksGrid() : activeTab === 'repos' ? renderReposGrid() : renderUMLTab()}
           </div>
         </div>
         `;
 
-        addResourceStyles(container);
-        bindEvents();
-    }
+    addResourceStyles(container);
+    bindEvents();
+  }
 
-    function renderBooksGrid() {
-        return `
+  function renderBooksGrid() {
+    return `
         <div class="book-grid">
           ${LLD_BOOKS.map((book, i) => `
             <div class="book-card glass animate-fade-in-up" style="animation-delay: ${i * 60}ms" data-color="${book.color}">
@@ -82,10 +85,10 @@ export function renderResourcesPage(container) {
           `).join('')}
         </div>
         `;
-    }
+  }
 
-    function renderReposGrid() {
-        return `
+  function renderReposGrid() {
+    return `
         <div class="repo-grid">
           ${LLD_GITHUB_REPOS.map((repo, i) => `
             <div class="repo-card glass animate-fade-in-up" style="animation-delay: ${i * 60}ms" data-color="${repo.color}">
@@ -112,26 +115,191 @@ export function renderResourcesPage(container) {
           `).join('')}
         </div>
         `;
-    }
+  }
 
-    function bindEvents() {
-        container.querySelectorAll('.res-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                activeTab = tab.dataset.tab;
-                render();
-            });
-        });
-    }
+  function renderUMLTab() {
+    const diagrams = getUMLDiagrams();
+    return `
+        <div class="uml-section">
+          <div class="uml-upload-zone glass" id="uml-upload-zone">
+            <input type="file" id="uml-file-input" accept="image/*" style="display:none" multiple />
+            <div class="uml-upload-content">
+              <span style="font-size:40px;">📐</span>
+              <h3>Upload UML Diagrams</h3>
+              <p>Drag & drop images here or click to upload</p>
+              <span class="upload-formats">PNG, JPG, SVG, WebP</span>
+            </div>
+          </div>
 
-    render();
+          <div class="uml-form glass" id="uml-form" style="display:none;">
+            <h4>Add Diagram Details</h4>
+            <input type="text" id="uml-title" placeholder="Diagram title (e.g., Parking Lot Class Diagram)" class="uml-input" />
+            <input type="text" id="uml-problem" placeholder="Related LLD problem (e.g., Parking Lot)" class="uml-input" />
+            <textarea id="uml-desc" placeholder="Brief description..." class="uml-input uml-textarea"></textarea>
+            <div class="uml-form-btns">
+              <button class="btn btn-ghost btn-sm" id="uml-cancel">Cancel</button>
+              <button class="btn btn-primary btn-sm" id="uml-save">Save Diagram</button>
+            </div>
+          </div>
+
+          ${diagrams.length > 0 ? `
+            <h3 class="uml-gallery-title">Your Diagrams (${diagrams.length})</h3>
+            <div class="uml-gallery">
+              ${diagrams.map((d, i) => `
+                <div class="uml-card glass animate-fade-in-up" style="animation-delay: ${i * 60}ms">
+                  <div class="uml-card-img" data-idx="${i}">
+                    <img src="${d.image}" alt="${d.title}" loading="lazy" />
+                  </div>
+                  <div class="uml-card-info">
+                    <h4>${d.title || 'Untitled Diagram'}</h4>
+                    ${d.problem ? `<span class="badge badge-emerald">${d.problem}</span>` : ''}
+                    ${d.description ? `<p class="uml-card-desc">${d.description}</p>` : ''}
+                    <button class="btn btn-ghost btn-sm uml-delete" data-idx="${i}">🗑 Delete</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="empty-state" style="padding:var(--space-10) 0;">
+              <span style="font-size:48px; opacity:0.3;">📐</span>
+              <p style="color:var(--text-muted); margin-top:var(--space-3);">No UML diagrams uploaded yet. Upload your first one above!</p>
+            </div>
+          `}
+        </div>
+        `;
+  }
+
+  function bindEvents() {
+    container.querySelectorAll('.res-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        activeTab = tab.dataset.tab;
+        render();
+      });
+    });
+
+    // UML upload events
+    if (activeTab === 'uml') bindUMLEvents(container, render);
+  }
+
+  render();
 }
 
 
+
+// ═══════════════════════════════════════════════════════════
+// UML Diagram Helpers
+// ═══════════════════════════════════════════════════════════
+
+function getUMLDiagrams() {
+  return JSON.parse(localStorage.getItem('uml_diagrams') || '[]');
+}
+
+function saveUMLDiagram(diagram) {
+  const diagrams = getUMLDiagrams();
+  diagrams.push(diagram);
+  localStorage.setItem('uml_diagrams', JSON.stringify(diagrams));
+}
+
+function deleteUMLDiagram(idx) {
+  const diagrams = getUMLDiagrams();
+  diagrams.splice(idx, 1);
+  localStorage.setItem('uml_diagrams', JSON.stringify(diagrams));
+}
+
+let pendingUMLImage = null;
+
+function bindUMLEvents(container, rerender) {
+  const zone = container.querySelector('#uml-upload-zone');
+  const fileInput = container.querySelector('#uml-file-input');
+  const form = container.querySelector('#uml-form');
+
+  if (!zone) return;
+
+  zone.addEventListener('click', () => fileInput.click());
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleUMLFile(e.dataTransfer.files[0], container, form);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleUMLFile(fileInput.files[0], container, form);
+  });
+
+  // Form buttons
+  const cancelBtn = container.querySelector('#uml-cancel');
+  const saveBtn = container.querySelector('#uml-save');
+  if (cancelBtn) cancelBtn.addEventListener('click', () => { form.style.display = 'none'; pendingUMLImage = null; });
+  if (saveBtn) saveBtn.addEventListener('click', () => {
+    if (!pendingUMLImage) return;
+    saveUMLDiagram({
+      image: pendingUMLImage,
+      title: container.querySelector('#uml-title').value || 'Untitled',
+      problem: container.querySelector('#uml-problem').value || '',
+      description: container.querySelector('#uml-desc').value || '',
+      date: new Date().toISOString()
+    });
+    pendingUMLImage = null;
+    rerender();
+  });
+
+  // Delete buttons
+  container.querySelectorAll('.uml-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirm('Delete this diagram?')) {
+        deleteUMLDiagram(parseInt(btn.dataset.idx));
+        rerender();
+      }
+    });
+  });
+
+  // Lightbox
+  container.querySelectorAll('.uml-card-img').forEach(img => {
+    img.addEventListener('click', () => {
+      const diagrams = getUMLDiagrams();
+      const d = diagrams[parseInt(img.dataset.idx)];
+      showLightbox(d);
+    });
+  });
+}
+
+function handleUMLFile(file, container, form) {
+  if (!file.type.startsWith('image/')) return alert('Please upload an image file.');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    pendingUMLImage = e.target.result;
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  reader.readAsDataURL(file);
+}
+
+function showLightbox(diagram) {
+  const overlay = document.createElement('div');
+  overlay.className = 'lightbox-overlay';
+  overlay.innerHTML = `
+    <div class="lightbox-content">
+      <button class="lightbox-close">&times;</button>
+      <img src="${diagram.image}" alt="${diagram.title}" />
+      <div class="lightbox-info">
+        <h3>${diagram.title || 'Untitled'}</h3>
+        ${diagram.problem ? `<span class="badge badge-emerald">${diagram.problem}</span>` : ''}
+        ${diagram.description ? `<p>${diagram.description}</p>` : ''}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('.lightbox-close').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+
 function addResourceStyles(container) {
-    if (container.querySelector('#resource-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'resource-styles';
-    style.textContent = `
+  if (container.querySelector('#resource-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'resource-styles';
+  style.textContent = `
     /* ── Hero ──────────────────────────────────────────────── */
     .res-hero { text-align: center; padding: var(--space-12) 0 var(--space-8); }
     .hero-gradient-green {
@@ -283,14 +451,77 @@ function addResourceStyles(container) {
       text-decoration: none;
     }
 
+    /* ── UML Upload & Gallery ─────────────────────────────── */
+    .uml-section { display: flex; flex-direction: column; gap: var(--space-5); }
+    .uml-upload-zone {
+      padding: var(--space-10); border-radius: var(--radius-xl); cursor: pointer;
+      text-align: center; transition: all var(--transition-fast);
+      border: 2px dashed var(--glass-border);
+    }
+    .uml-upload-zone:hover, .uml-upload-zone.dragover {
+      border-color: var(--accent-emerald); background: rgba(16,185,129,0.05);
+    }
+    .uml-upload-content h3 { font-size: var(--text-lg); font-weight: 700; margin-top: var(--space-3); }
+    .uml-upload-content p { color: var(--text-secondary); font-size: var(--text-sm); margin-top: var(--space-1); }
+    .uml-form {
+      padding: var(--space-6); border-radius: var(--radius-xl);
+    }
+    .uml-form h4 { font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-4); }
+    .uml-input {
+      width: 100%; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+      background: var(--bg-surface); border: 1px solid var(--glass-border);
+      color: var(--text-primary); font-size: var(--text-sm); outline: none;
+      margin-bottom: var(--space-3); font-family: var(--font-sans);
+    }
+    .uml-input:focus { border-color: var(--accent-emerald); }
+    .uml-textarea { min-height: 80px; resize: vertical; }
+    .uml-form-btns { display: flex; gap: var(--space-2); justify-content: flex-end; }
+    .uml-gallery-title { font-size: var(--text-lg); font-weight: 700; margin-top: var(--space-4); }
+    .uml-gallery {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--space-5);
+    }
+    .uml-card { border-radius: var(--radius-xl); overflow: hidden; transition: all var(--transition-base); }
+    .uml-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.15); }
+    .uml-card-img {
+      height: 200px; overflow: hidden; cursor: pointer; background: rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .uml-card-img img { width: 100%; height: 100%; object-fit: contain; padding: var(--space-2); }
+    .uml-card-info { padding: var(--space-4); }
+    .uml-card-info h4 { font-size: var(--text-sm); font-weight: 700; margin-bottom: var(--space-2); }
+    .uml-card-desc { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2); margin-bottom: var(--space-2); }
+
+    /* ── Lightbox ─────────────────────────────────────────── */
+    .lightbox-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center; z-index: 2000;
+      animation: fadeIn 200ms ease-out;
+    }
+    .lightbox-content {
+      max-width: 90vw; max-height: 90vh; position: relative;
+      animation: scaleIn 300ms ease-out;
+    }
+    .lightbox-content img { max-width: 100%; max-height: 75vh; border-radius: var(--radius-lg); }
+    .lightbox-close {
+      position: absolute; top: -12px; right: -12px;
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      background: var(--bg-tertiary); border: 1px solid var(--glass-border);
+      color: var(--text-primary); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-info { margin-top: var(--space-3); }
+    .lightbox-info h3 { font-size: var(--text-base); font-weight: 700; color: white; }
+    .lightbox-info p { font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-2); }
+
     /* ── Responsive ───────────────────────────────────────── */
     @media (max-width: 768px) {
       .topics-strip { grid-template-columns: 1fr 1fr; }
-      .book-grid, .repo-grid { grid-template-columns: 1fr; }
+      .book-grid, .repo-grid, .uml-gallery { grid-template-columns: 1fr; }
     }
     @media (max-width: 480px) {
       .topics-strip { grid-template-columns: 1fr; }
     }
     `;
-    container.appendChild(style);
+  container.appendChild(style);
 }
