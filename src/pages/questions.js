@@ -7,6 +7,7 @@ import { questions, getQuestionsByRound } from '../data/questions.js';
 import { NC_TOPICS } from '../data/neetcode150.js';
 import { router } from '../router.js';
 import { auth } from '../services/auth.js';
+import { fetchProblemData, titleToSlug, getLangSlug } from '../services/leetcodeService.js';
 
 const ROUND_TABS = [
   { id: 'dsa', label: 'DSA (NeetCode 150)', icon: '⚡', color: 'indigo' },
@@ -46,7 +47,8 @@ export function renderQuestionsPage(container) {
   let expandedQ = null;
   let editorState = null; // { qid, approach, lang }
   let compilerOutput = {};
-  let validationErrors = {};  // { [qid-approach]: string }
+  let validationErrors = {};
+  let problemDataCache = {}; // { [qid]: { testCases, codeSnippets, loading, error } }
 
   function render() {
     const roundQs = getQuestionsByRound(activeTab);
@@ -153,6 +155,9 @@ export function renderQuestionsPage(container) {
           ${lcNum ? `<a href="https://leetcode.com/problems/${q.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '')}" target="_blank" class="lc-link">🔗 LeetCode</a>` : ''}
         </div>
 
+        <!-- Test Cases from LeetCode API -->
+        ${renderTestCases(q)}
+
         ${renderComplexityChart(q, sol)}
 
         <div class="sol-editor">
@@ -164,6 +169,66 @@ export function renderQuestionsPage(container) {
         </div>
       </div>` : ''}
     </div>`;
+  }
+
+  // ─── TEST CASES (from LeetCode API) ──────────────────────
+  function renderTestCases(q) {
+    const pd = problemDataCache[q.id];
+    if (!pd) return `<div class="tc-panel glass-dark"><div class="tc-loading"><span class="tc-spinner"></span> Loading test cases from LeetCode...</div></div>`;
+    if (pd.error) return `<div class="tc-panel glass-dark"><div class="tc-error">⚠ ${pd.error}</div></div>`;
+    if (!pd.testCases || pd.testCases.length === 0) return `<div class="tc-panel glass-dark"><div class="tc-empty">No test cases available</div></div>`;
+
+    return `
+    <div class="tc-panel glass-dark">
+      <div class="tc-header">
+        <h4 class="tc-title">🧪 Test Cases <span class="tc-count">${pd.testCases.length}</span></h4>
+        <span class="tc-source">via LeetCode API</span>
+      </div>
+      <div class="tc-grid">
+        ${pd.testCases.map(tc => `
+        <div class="tc-case">
+          <div class="tc-case-id">Case ${tc.id}</div>
+          <div class="tc-io">
+            <div class="tc-input">
+              <span class="tc-label">Input</span>
+              <pre class="tc-pre">${esc(tc.input)}</pre>
+            </div>
+            <div class="tc-expected">
+              <span class="tc-label">Expected</span>
+              <pre class="tc-pre tc-exp">${esc(tc.expected || 'N/A')}</pre>
+            </div>
+          </div>
+          ${tc.explanation ? `<div class="tc-explanation">💡 ${esc(tc.explanation)}</div>` : ''}
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  async function fetchTestCasesForQuestion(q) {
+    if (problemDataCache[q.id]) return;
+    problemDataCache[q.id] = null; // mark as loading
+    render(); // show loading state
+
+    const slug = titleToSlug(q.title);
+    const data = await fetchProblemData(slug);
+    if (data) {
+      problemDataCache[q.id] = {
+        testCases: data.testCases,
+        codeSnippets: data.codeSnippets,
+        error: null
+      };
+    } else {
+      problemDataCache[q.id] = { testCases: [], codeSnippets: {}, error: 'Could not load from LeetCode API' };
+    }
+    render();
+  }
+
+  // Helper to get code template for current language
+  function getCodeTemplate(qid, langId) {
+    const pd = problemDataCache[qid];
+    if (!pd || !pd.codeSnippets) return '';
+    const slug = getLangSlug(langId);
+    return pd.codeSnippets[slug]?.code || '';
   }
 
   // ─── COMPLEXITY CHART ────────────────────────────────────
@@ -391,15 +456,37 @@ export function renderQuestionsPage(container) {
     container.querySelectorAll('.qb-card-header').forEach(header => {
       header.addEventListener('click', () => {
         const qid = header.dataset.expand;
-        expandedQ = expandedQ === qid ? null : qid; editorState = null; render();
+        expandedQ = expandedQ === qid ? null : qid;
+        editorState = null;
+        render();
+        // Fetch test cases from LeetCode API when expanding a DSA question
+        if (expandedQ && activeTab === 'dsa') {
+          const allQs = getQuestionsByRound('dsa');
+          const question = allQs.find(q => q.id === qid);
+          if (question) fetchTestCasesForQuestion(question);
+        }
       });
     });
 
     container.querySelectorAll('.sol-edit-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const sol = getSolutions()[btn.dataset.qid]?.[btn.dataset.approach] || {};
-        editorState = { qid: btn.dataset.qid, approach: btn.dataset.approach, lang: sol.language || 'javascript' };
+        const qid = btn.dataset.qid;
+        const approach = btn.dataset.approach;
+        const sol = getSolutions()[qid]?.[approach] || {};
+        const lang = sol.language || 'javascript';
+        editorState = { qid, approach, lang };
+        // Auto-populate with LeetCode template if no saved code
+        if (!sol.code) {
+          const template = getCodeTemplate(qid, lang);
+          if (template) {
+            const solutions = getSolutions();
+            if (!solutions[qid]) solutions[qid] = {};
+            if (!solutions[qid][approach]) solutions[qid][approach] = {};
+            solutions[qid][approach].code = template;
+            saveSolutions(solutions);
+          }
+        }
         render();
       });
     });
@@ -728,6 +815,26 @@ function addQBStyles(container) {
     border-top: 1px solid rgba(255,255,255,0.06);
     display: flex; gap: var(--space-2);
   }
+
+  /* Test Cases Panel */
+  .tc-panel { padding: var(--space-4); border-radius: var(--radius-lg); background: rgba(0,0,0,0.3); border: 1px solid rgba(34,211,238,0.15); margin-bottom: var(--space-4); }
+  .tc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+  .tc-title { font-size: 14px; font-weight: 700; }
+  .tc-count { font-size: 11px; font-weight: 700; color: var(--accent-cyan); background: rgba(34,211,238,0.12); padding: 1px 8px; border-radius: var(--radius-full); margin-left: 6px; }
+  .tc-source { font-size: 10px; color: var(--text-muted); font-style: italic; }
+  .tc-grid { display: flex; flex-direction: column; gap: var(--space-2); }
+  .tc-case { padding: var(--space-3); border-radius: var(--radius-md); background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.04); }
+  .tc-case-id { font-size: 11px; font-weight: 700; color: var(--accent-cyan); margin-bottom: var(--space-2); }
+  .tc-io { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .tc-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+  .tc-pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; color: var(--text-secondary); margin: 0; white-space: pre-wrap; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: var(--radius-sm); }
+  .tc-exp { color: var(--accent-emerald); }
+  .tc-explanation { font-size: 11px; color: var(--text-muted); margin-top: var(--space-2); }
+  .tc-loading { text-align: center; padding: var(--space-4); color: var(--text-muted); font-size: 13px; }
+  .tc-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(34,211,238,0.3); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .tc-error { text-align: center; padding: var(--space-3); color: var(--accent-amber); font-size: 12px; }
+  .tc-empty { text-align: center; padding: var(--space-3); color: var(--text-muted); font-size: 12px; }
 
   .empty-state { text-align: center; padding: var(--space-16) 0; }
   .empty-state p { color: var(--text-muted); margin-top: var(--space-3); }
